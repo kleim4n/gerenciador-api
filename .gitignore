@@ -1,3 +1,9 @@
+.idea
+.vscode
+bin
+build
+.gradle
+
 # Compiled class file
 *.class
 
