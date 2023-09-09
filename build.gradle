@@ -1,5 +1,6 @@
 plugins {
 	id 'java'
+	id 'jvm-test-suite'
 	id 'org.springframework.boot' version '3.1.3'
 	id 'io.spring.dependency-management' version '1.1.3'
 }
@@ -32,6 +33,24 @@ dependencies {
 	testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.0'
 }
 
-tasks.named('test') {
+test {
 	useJUnitPlatform()
+}
+
+testing {
+	suites {
+		testE2e(JvmTestSuite) {
+			useJUnitJupiter()
+			sources.java.srcDirs = ['src/test-e2e/java']
+			sources.resources.srcDirs = ['src/test-e2e/resources']
+			dependencies {
+				implementation 'io.rest-assured:rest-assured:5.2.0'
+				implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+			}
+		}
+	}
+}
+
+testE2e {
+	systemProperty 'env', System.getProperty('env')
 }
