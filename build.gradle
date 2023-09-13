@@ -33,12 +33,11 @@ dependencies {
 	testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.0'
 }
 
-test {
-	useJUnitPlatform()
-}
-
 testing {
 	suites {
+		test {
+			useJUnitJupiter()
+		}
 		testE2e(JvmTestSuite) {
 			useJUnitJupiter()
 			sources.java.srcDirs = ['src/test-e2e/java']
