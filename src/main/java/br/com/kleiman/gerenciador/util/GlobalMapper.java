@@ -1,5 +1,8 @@
 package br.com.kleiman.gerenciador.util;
 
+import br.com.kleiman.gerenciador.model.entity.Cliente;
+import br.com.kleiman.gerenciador.model.request.ClientePost;
+import br.com.kleiman.gerenciador.model.response.ClienteResponse;
 import br.com.kleiman.gerenciador.model.response.ProdutoResponse;
 import br.com.kleiman.gerenciador.model.entity.Produto;
 import br.com.kleiman.gerenciador.model.request.ProdutoPost;
@@ -30,4 +33,17 @@ public class GlobalMapper {
                 .build();
     }
 
+    public static ClienteResponse ClienteMapper(Cliente cliente) {
+        return new ClienteResponse(
+                cliente.getId(),
+                cliente.getCpf(),
+                cliente.getNome());
+    }
+
+    public static Cliente ClienteMapper(ClientePost clientePost) {
+        return Cliente.builder()
+                .cpf(clientePost.cpf())
+                .nome(clientePost.nome())
+                .build();
+    }
 }
