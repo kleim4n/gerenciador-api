@@ -34,6 +34,8 @@ public class ProdutoService {
     }
 
     public ProdutoResponse cria(ProdutoPost produtoPost) {
+        if(produtoPost.descricao() == null)
+            throw new GlobalExceptionHandler.BadRequestException("Descrição de produto é obrigatória");
         if(produtoPost.descricao().isBlank())
             throw new GlobalExceptionHandler.UnprocessableException("Descrição não pode ser vazia");
         if(produtoPost.preco() < 0)
