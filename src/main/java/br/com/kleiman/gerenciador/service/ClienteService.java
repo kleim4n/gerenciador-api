@@ -3,7 +3,6 @@ package br.com.kleiman.gerenciador.service;
 import br.com.kleiman.gerenciador.model.entity.Cliente;
 import br.com.kleiman.gerenciador.model.request.ClientePost;
 import br.com.kleiman.gerenciador.model.response.ClienteResponse;
-import br.com.kleiman.gerenciador.model.response.ProdutoResponse;
 import br.com.kleiman.gerenciador.repository.ClienteRepository;
 import br.com.kleiman.gerenciador.util.GlobalExceptionHandler;
 import br.com.kleiman.gerenciador.util.GlobalMapper;
@@ -46,10 +45,18 @@ public class ClienteService {
             throw new GlobalExceptionHandler.BadRequestException("CPF de cliente é obrigatório");
         if(clientePost.cpf().isBlank())
             throw new GlobalExceptionHandler.UnprocessableException("CPF não pode ser vazio");
+        if(clientePost.cpf().length() != 11)
+            throw new GlobalExceptionHandler.UnprocessableException("CPF deve ter 11 dígitos");
+        if(!clientePost.cpf().matches("[0-9]+"))
+            throw new GlobalExceptionHandler.UnprocessableException("CPF deve conter apenas números");
         if(clientePost.nome() == null)
             throw new GlobalExceptionHandler.BadRequestException("Nome de cliente é obrigatório");
         if(clientePost.nome().isBlank())
             throw new GlobalExceptionHandler.UnprocessableException("Nome não pode ser vazio");
+        if(clientePost.nome().length() < 3)
+            throw new GlobalExceptionHandler.UnprocessableException("Nome deve ter pelo menos 3 caracteres");
+        if(!clientePost.nome().matches("[a-zA-Z\\s]+"))
+            throw new GlobalExceptionHandler.UnprocessableException("Nome deve conter apenas letras");
         if(clienteRepository.findByCpf(clientePost.cpf()).isPresent())
             throw new GlobalExceptionHandler.UnprocessableException("CPF já cadastrado");
         return ClienteMapper(

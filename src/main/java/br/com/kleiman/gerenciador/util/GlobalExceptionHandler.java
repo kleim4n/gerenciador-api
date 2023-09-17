@@ -1,5 +1,6 @@
 package br.com.kleiman.gerenciador.util;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -39,5 +40,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = BadRequestException.class)
     public ResponseEntity<Map<String, String>> handleConflictBadRequest(BadRequestException ex) {
         return ResponseEntity.status(400).body(Map.of("message", ex.getMessage()));
+    }
+    @ExceptionHandler(value = ConstraintViolationException.class)
+    public ResponseEntity<Map<String, String>> handleConflictConstraintViolation(ConstraintViolationException ex) {
+        return ResponseEntity.status(422).body(Map.of("message", ex.getMessage()));
     }
 }
