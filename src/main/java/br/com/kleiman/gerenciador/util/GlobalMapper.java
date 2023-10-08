@@ -1,10 +1,13 @@
 package br.com.kleiman.gerenciador.util;
 
 import br.com.kleiman.gerenciador.model.entity.Cliente;
+import br.com.kleiman.gerenciador.model.entity.ItemVenda;
 import br.com.kleiman.gerenciador.model.entity.Venda;
 import br.com.kleiman.gerenciador.model.request.ClientePost;
+import br.com.kleiman.gerenciador.model.request.ItemVendaPost;
 import br.com.kleiman.gerenciador.model.request.VendaPost;
 import br.com.kleiman.gerenciador.model.response.ClienteResponse;
+import br.com.kleiman.gerenciador.model.response.ItemVendaRespose;
 import br.com.kleiman.gerenciador.model.response.ProdutoResponse;
 import br.com.kleiman.gerenciador.model.entity.Produto;
 import br.com.kleiman.gerenciador.model.request.ProdutoPost;
@@ -64,6 +67,26 @@ public class GlobalMapper {
                 venda.getData(),
                 venda.getRealizada(),
                 venda.getDesconto()
+        );
+    }
+
+    public static ItemVenda ItemVendaMapper(ItemVendaPost itemVendaPost) {
+        return ItemVenda.builder()
+                .produto_id(itemVendaPost.produtoId())
+                .venda_id(itemVendaPost.vendaId())
+                .quantidade(itemVendaPost.quantidade())
+                .desconto(itemVendaPost.desconto())
+                .build();
+    }
+
+    public static ItemVendaRespose ItemVendaMapper(ItemVenda itemVenda) {
+        return new ItemVendaRespose(
+                itemVenda.getId(),
+                itemVenda.getProduto_id(),
+                itemVenda.getVenda_id(),
+                itemVenda.getQuantidade(),
+                itemVenda.getPreco(),
+                itemVenda.getDesconto()
         );
     }
 }
