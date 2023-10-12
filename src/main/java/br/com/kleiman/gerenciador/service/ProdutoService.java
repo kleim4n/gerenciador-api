@@ -1,6 +1,7 @@
 package br.com.kleiman.gerenciador.service;
 
 import br.com.kleiman.gerenciador.model.entity.Produto;
+import br.com.kleiman.gerenciador.repository.ItemVendaRepository;
 import br.com.kleiman.gerenciador.util.GlobalExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,8 @@ import static br.com.kleiman.gerenciador.util.GlobalMapper.ProdutoMapper;
 public class ProdutoService {
     @Autowired
     private ProdutoRepository produtoRepository;
+    @Autowired
+    private ItemVendaRepository itemVendaRepository;
 
     public List<ProdutoResponse> lista() {
         return produtoRepository
@@ -52,6 +55,8 @@ public class ProdutoService {
     public void deleta(long id) {
         produtoRepository.findById(id)
                 .orElseThrow(() -> new GlobalExceptionHandler.NotFoundException("Produto não encontrado"));
+        if(itemVendaRepository.existsByProduto_id(id))
+            throw new GlobalExceptionHandler.UnprocessableException("Produto não pode ser excluído pois está em uma venda");
         produtoRepository.deleteById(id);
     }
 

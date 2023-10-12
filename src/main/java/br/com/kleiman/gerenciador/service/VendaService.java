@@ -1,12 +1,16 @@
 package br.com.kleiman.gerenciador.service;
 
+import br.com.kleiman.gerenciador.model.entity.ItemVenda;
 import br.com.kleiman.gerenciador.model.entity.Venda;
 import br.com.kleiman.gerenciador.model.request.VendaPost;
 import br.com.kleiman.gerenciador.model.response.VendaResponse;
 import br.com.kleiman.gerenciador.repository.ClienteRepository;
+import br.com.kleiman.gerenciador.repository.ItemVendaRepository;
+import br.com.kleiman.gerenciador.repository.ProdutoRepository;
 import br.com.kleiman.gerenciador.repository.VendaRepository;
 import br.com.kleiman.gerenciador.util.GlobalExceptionHandler;
 import br.com.kleiman.gerenciador.util.GlobalMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +25,10 @@ public class VendaService {
     private VendaRepository vendaRepository;
     @Autowired
     private ClienteRepository clienteRepository;
+    @Autowired
+    private ItemVendaRepository itemVendaRepository;
+    @Autowired
+    private ProdutoRepository produtoRepository;
 
     public VendaResponse cria(VendaPost vendaPost) {
         if (vendaPost.cliente_id() != null)
@@ -42,12 +50,30 @@ public class VendaService {
                 ));
     }
 
+    @Transactional
     public VendaResponse finaliza(long id) {
         Venda venda = vendaRepository
                 .findById(id)
                 .orElseThrow(() -> new GlobalExceptionHandler.NotFoundException("Venda não encontrada"));
         if (venda.getRealizada())
             throw new GlobalExceptionHandler.UnprocessableException("Venda já finalizada");
+        List<ItemVenda> itens = itemVendaRepository.findAllByVenda_id(id);
+        if (itens.isEmpty())
+            throw new GlobalExceptionHandler.UnprocessableException("Venda sem itens");
+        itens.forEach(item -> {
+            produtoRepository.findById(item.getProduto_id())
+                    .ifPresentOrElse(
+                            produto -> {
+                                if (produto.getEstoque() < item.getQuantidade())
+                                    throw new GlobalExceptionHandler.UnprocessableException("Estoque insuficiente");
+                                produto.setEstoque(produto.getEstoque() - item.getQuantidade());
+                                produtoRepository.save(produto);
+                            },
+                            () -> {
+                                throw new GlobalExceptionHandler.NotFoundException("Produto não encontrado");
+                            }
+                    );
+        });
         return VendaMapper(
                 vendaRepository.save(
                         new Venda(
@@ -60,12 +86,26 @@ public class VendaService {
                 ));
     }
 
+    @Transactional
     public VendaResponse cancela(long id) {
         Venda venda = vendaRepository
                 .findById(id)
                 .orElseThrow(() -> new GlobalExceptionHandler.NotFoundException("Venda não encontrada"));
         if (!venda.getRealizada())
             throw new GlobalExceptionHandler.UnprocessableException("Venda não finalizada");
+        List<ItemVenda> itens = itemVendaRepository.findAllByVenda_id(id);
+        itens.forEach(item -> {
+            produtoRepository.findById(item.getProduto_id())
+                    .ifPresentOrElse(
+                            produto -> {
+                                produto.setEstoque(produto.getEstoque() + item.getQuantidade());
+                                produtoRepository.save(produto);
+                            },
+                            () -> {
+                                throw new GlobalExceptionHandler.NotFoundException("Produto não encontrado");
+                            }
+                    );
+        });
         return VendaMapper(
                 vendaRepository.save(
                         new Venda(
@@ -106,6 +146,8 @@ public class VendaService {
                 .orElseThrow(() -> new GlobalExceptionHandler.NotFoundException("Venda não encontrada"));
         if (venda.getRealizada())
             throw new GlobalExceptionHandler.UnprocessableException("Venda já finalizada - não pode ser excluída");
+        if (!itemVendaRepository.findAllByVenda_id(id).isEmpty())
+            throw new GlobalExceptionHandler.UnprocessableException("Venda com itens - não pode ser excluída");
         vendaRepository.deleteById(id);
     }
 
