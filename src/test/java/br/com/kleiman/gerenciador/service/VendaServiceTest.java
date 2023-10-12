@@ -1,12 +1,17 @@
 package br.com.kleiman.gerenciador.service;
 
 import br.com.kleiman.gerenciador.model.entity.Cliente;
+import br.com.kleiman.gerenciador.model.entity.ItemVenda;
+import br.com.kleiman.gerenciador.model.entity.Produto;
 import br.com.kleiman.gerenciador.model.entity.Venda;
 import br.com.kleiman.gerenciador.model.request.VendaPost;
 import br.com.kleiman.gerenciador.model.response.VendaResponse;
 import br.com.kleiman.gerenciador.repository.ClienteRepository;
+import br.com.kleiman.gerenciador.repository.ItemVendaRepository;
+import br.com.kleiman.gerenciador.repository.ProdutoRepository;
 import br.com.kleiman.gerenciador.repository.VendaRepository;
 import br.com.kleiman.gerenciador.util.GlobalExceptionHandler;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,6 +31,10 @@ public class VendaServiceTest {
     private VendaRepository vendaRepository;
     @Mock
     private ClienteRepository clienteRepository;
+    @Mock
+    private ItemVendaRepository itemVendaRepository;
+    @Mock
+    private ProdutoRepository produtoRepository;
     @InjectMocks
     private VendaService vendaService;
 
@@ -73,6 +82,23 @@ public class VendaServiceTest {
                         true,
                         10.0
                 )));
+        assertThrows(GlobalExceptionHandler.UnprocessableException.class, () -> vendaService.finaliza(1L));
+    }
+    @Test
+    @DisplayName("Falha quando finaliza venda com produto sem estoque")
+    void testFinalizaComProdutoSemEstoque() {
+        when(vendaRepository.findById(1L)).thenReturn(java.util.Optional.of(
+                new Venda(
+                        1L,
+                        1L,
+                        null,
+                        false,
+                        10.0
+                )));
+        when(itemVendaRepository.findAllByVenda_id(1L)).thenReturn(java.util.List.of(
+                new ItemVenda(1L, 1L, 1L, 1, 10.0, 0.0)));
+        when(produtoRepository.findById(1L)).thenReturn(java.util.Optional.of(
+                new Produto(1L, "Produto 1", 10.0, 0)));
         assertThrows(GlobalExceptionHandler.UnprocessableException.class, () -> vendaService.finaliza(1L));
     }
     @Test
