@@ -3,6 +3,7 @@ package br.com.kleiman.gerenciador.service;
 import br.com.kleiman.gerenciador.model.response.ProdutoResponse;
 import br.com.kleiman.gerenciador.model.entity.Produto;
 import br.com.kleiman.gerenciador.model.request.ProdutoPost;
+import br.com.kleiman.gerenciador.repository.ItemVendaRepository;
 import br.com.kleiman.gerenciador.repository.ProdutoRepository;
 import br.com.kleiman.gerenciador.util.GlobalExceptionHandler;
 import org.junit.jupiter.api.DisplayName;
@@ -29,6 +30,8 @@ import static org.mockito.Mockito.when;
 public class ProdutoServiceTest {
     @Mock
     private ProdutoRepository produtoRepository;
+    @Mock
+    private ItemVendaRepository itemVendaRepository;
     @InjectMocks
     private ProdutoService produtoService;
     private static Produto produto1 = new Produto(1L, "Produto 1", 10.0, 10);
@@ -116,5 +119,19 @@ public class ProdutoServiceTest {
     void deletaNotFound() {
         when(produtoRepository.findById(1L)).thenReturn(java.util.Optional.empty());
         assertThrows(GlobalExceptionHandler.NotFoundException.class, () -> produtoService.deleta(1L));
+    }
+    @Test
+    @DisplayName("Falha ao deletar produto presente em venda")
+    void deletaProdutoEmVenda() {
+        when(produtoRepository.findById(1L)).thenReturn(java.util.Optional.of(produto1));
+        when(itemVendaRepository.existsByProduto_id(1L)).thenReturn(Boolean.TRUE);
+        assertThrows(GlobalExceptionHandler.UnprocessableException.class, () -> produtoService.deleta(1L));
+    }
+    @Test
+    @DisplayName("Deleta produto com sucesso")
+    void deleta() {
+        when(produtoRepository.findById(1L)).thenReturn(java.util.Optional.of(produto1));
+        when(itemVendaRepository.existsByProduto_id(1L)).thenReturn(Boolean.FALSE);
+        produtoService.deleta(1L);
     }
 }
