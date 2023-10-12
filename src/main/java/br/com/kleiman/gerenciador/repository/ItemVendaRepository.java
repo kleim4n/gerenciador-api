@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface ItemVendaRepository extends JpaRepository<ItemVenda, Long> {
     @Query(value = "select item_venda.* from item_venda where item_venda.venda_id = ?1", nativeQuery = true)
     List<ItemVenda> findAllByVenda_id(long venda_id);
+    @Query(value = "select exists(select item_venda.* from item_venda where item_venda.produto_id = ?1)", nativeQuery = true)
+    boolean existsByProduto_id(long id);
 }
